@@ -1,0 +1,123 @@
+-- When there add 1 thing in ReplicatedStorage rip :sad: 
+for i,v in pairs(game:GetService("ReplicatedStorage").Packages["_Index"]:GetDescendants()) do
+    if v:IsA("RemoteEvent") or v:IsA("RemoteFunction") or v:IsA("Folder") then
+       v.Name = i 
+    end
+end
+
+local Remotes = {}
+Remotes["TeleportRemote"] = game:GetService("ReplicatedStorage").Packages._Index["24"].knit["29"]["69"]["72"]["74"]
+Remotes["HouseTeleportRemote"] = game:GetService("ReplicatedStorage").Packages._Index["24"].knit["29"]["61"]["62"]["67"]
+Remotes["HaveFun"] = game:GetService("ReplicatedStorage").Packages._Index["24"].knit["29"]["30"]["31"]["38"]
+Remotes["Sleep"] = game:GetService("ReplicatedStorage").Packages._Index["24"].knit["29"]["30"]["31"]["42"]
+Remotes["Food"] = game:GetService("ReplicatedStorage").Packages._Index["24"].knit["29"]["81"]["82"]["83"]
+
+for i,v in pairs(game:GetService("Workspace").Teleporters.HouseTeleporters:GetChildren()) do
+    if v:FindFirstChild("TouchInterest") then
+        firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart,v,0)    
+    end
+end
+
+
+local HouseThings = {Mood=nil,Food=nil,Sleep=nil}
+local OwnedHousesFolder = game:GetService("Workspace").InitiatedHouses
+repeat wait() until OwnedHousesFolder:FindFirstChildWhichIsA("Model")
+local House = OwnedHousesFolder:FindFirstChildWhichIsA("Model")
+local PlacedItems = House:FindFirstChild("PlacedItems")
+local FoodImage = "rbxassetid://9120022813"
+local MoodImage = "rbxassetid://9120011121"
+local EnergyImage = "rbxassetid://9120011134"
+for i,v in pairs(PlacedItems:GetChildren()) do
+    local ItemEffect = v:FindFirstChild("ItemEffect")
+    if ItemEffect then
+        local Image = tostring(ItemEffect:FindFirstChild("ImageLabel").Image)
+        if Image == FoodImage then
+            HouseThings.Food = v.Name
+        elseif Image == EnergyImage then
+            HouseThings.Sleep = v.Name
+        elseif Image == MoodImage then
+            HouseThings.Mood = v.Name
+        end
+    end
+end
+
+Remotes["HouseTeleportRemote"]:InvokeServer(false)
+
+local RunService = game:GetService("RunService")
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/master/Module.lua"))()
+local UI = Material.Load({
+     Title = "YouTube Life! [NEW]",
+     Style = 3,
+     SizeX = 350,
+     SizeY = 250,
+     Theme = "Dark"
+})
+
+local Main = UI.New({
+    Title = "Main"
+})
+
+local Teleport = UI.New({
+    Title = "Teleport"
+})
+
+local Teleports = {
+    ["Homes"] = "RealEstateAgency",
+    ["Upgrades"] = "GamingShop",
+}
+
+local TeleportSettings = {place="",inside=true}
+Teleport.Dropdown({
+    Text = "where?",
+    Callback = function(value)
+        TeleportSettings.place = value
+    end,
+    Options = {"Homes", "Upgrades","House"}
+})
+
+Teleport.Toggle({
+    Text = "inside the building",
+    Callback = function(value)
+        TeleportSettings.inside = value
+    end,
+    Enabled = true
+})
+
+Teleport.Button({
+    Text = "Teleport!",
+    Callback = function()
+        if TeleportSettings.place == "" then return end
+        if TeleportSettings.place == "House" then 
+            for i,v in pairs(game:GetService("Workspace").Teleporters.HouseTeleporters:GetChildren()) do
+                if v:FindFirstChild("TouchInterest") then
+                    firetouchinterest(game.Players.LocalPlayer.Character.HumanoidRootPart,v,0)    
+                end
+            end
+            return
+        end
+        Remotes["TeleportRemote"]:InvokeServer(Teleports[TeleportSettings.place],TeleportSettings.inside)
+    end
+})
+
+local Automatic = {Mood=false,Energy=false,Food=false}
+for i,v in pairs(Automatic) do
+    Main.Toggle({
+        Text = "Auto " .. i,
+        Callback = function(value)
+            Automatic[i] = value
+        end,
+        Enabled = false
+    })
+end
+
+RunService.RenderStepped:Connect(function()
+    if Automatic.Mood and game:GetService("Players").LocalPlayer.PlayerGui.MainGui.HUD.PlayerStats.MoodStatus.Percentage.Text ~= "100%" then
+        Remotes["HaveFun"]:InvokeServer(HouseThings.Mood)
+    end
+    if Automatic.Energy and game:GetService("Players").LocalPlayer.PlayerGui.MainGui.HUD.PlayerStats.EnergyStatus.Percentage.Text ~= "100%" then
+        Remotes["Sleep"]:InvokeServer(HouseThings.Sleep)
+    end
+    if Automatic.Food and game:GetService("Players").LocalPlayer.PlayerGui.MainGui.HUD.PlayerStats.FoodStatus.Percentage.Text ~= "100%" then
+        Remotes["Food"]:InvokeServer("water")
+    end
+end)
